@@ -2,8 +2,9 @@ from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from data_base.db_setup import get_db
+from data_base.db_setup import get_db, async_get_db
 from pydantic_schemas.user import User, UserCreate
 from pydantic_schemas.course import Course
 from endpoints.api_utils.users_utility import get_user, get_user_by_email, get_users, create_user
@@ -27,8 +28,8 @@ async def create_new_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/users/{user_id}", response_model = User)
-async def read_user(user_id: int, db: Session = Depends(get_db)):
-    db_user = get_user(db = db, user_id = user_id)
+async def read_user(user_id: int, db: AsyncSession = Depends(async_get_db)):
+    db_user = await get_user(db = db, user_id = user_id)
     if db_user is None:
         raise HTTPException(status_code = 404, detail = "User not found")
     return db_user
